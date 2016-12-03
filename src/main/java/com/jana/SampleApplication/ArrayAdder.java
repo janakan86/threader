@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
-public class Main implements ApplicationCallback {
+public class ArrayAdder implements ApplicationCallback {
 
        testMainThread mainThread = new testMainThread(this);
 
@@ -28,7 +28,6 @@ public class Main implements ApplicationCallback {
                 array5[i] = i;
             }
 
-            System.out.println("Done loading arrays");
 
             mainThread.addTask(new ThreadAdder(array1),1);
             mainThread.addTask(new ThreadAdder(array2),1);
@@ -38,6 +37,7 @@ public class Main implements ApplicationCallback {
 
             mainThread.start();
 
+            /*  calculate without using Threader*/
             int total =0;
             for(int i=0; i<array1.length;i++){
                 total+=array1[i];
@@ -62,7 +62,6 @@ public class Main implements ApplicationCallback {
 
     @Override
     public void onTasksComplete() {
-        System.out.println("            All tasks done ");
         try {
             ArrayList<Object> results = mainThread.getResults();
 
@@ -82,11 +81,12 @@ public class Main implements ApplicationCallback {
 
     public static void main(String[] args) {
 
-        new Main().createAndGetTasksDone();
+        new ArrayAdder().createAndGetTasksDone();
     }
 
 
 }
+
 
 class testMainThread extends MainThread{
 

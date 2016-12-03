@@ -5,6 +5,15 @@ import java.util.concurrent.Callable;
 /**
  * Created by janakan on 26/11/16.
  */
+
+
+interface TaskCallback {
+
+    void onTaskCompleted(String threadName);
+    void onException (Exception exception);
+}
+
+
 public class TaskWrapper implements Callable {
 
     Callable callable;
@@ -18,7 +27,7 @@ public class TaskWrapper implements Callable {
     TaskWrapper(TaskCallback callback, Runnable runnable){
         this.callback = callback;
 
-        /* wrap Runnables with Callable as the framework handles Callables only*/
+        /* wrap Runnables with Callable as the framework handles Callables only */
 
         callable = new Callable() {
             @Override
@@ -31,14 +40,10 @@ public class TaskWrapper implements Callable {
 
     @Override
     public Object call() throws Exception {
-        callable.call();
+        Object returnValue = callable.call();
         callback.onTaskCompleted("Test");
-        return null;
+        return returnValue;
     }
 
-    /**@Override
-    public  call() throws Exception {
-        callable.call();
-        callback.onTaskCompleted("Test");
-    }*/
+
 }

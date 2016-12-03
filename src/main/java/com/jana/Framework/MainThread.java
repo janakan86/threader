@@ -10,6 +10,7 @@ import java.util.concurrent.Future;
 public class MainThread extends Thread implements TaskCallback {
 
 
+    private ApplicationCallback applicationCallback;
 
     private ArrayList<Thread> listOfChildren = new ArrayList<>();
     private ArrayList<Callable<Object>> listOfTasks = new ArrayList<>();
@@ -21,14 +22,24 @@ public class MainThread extends Thread implements TaskCallback {
     private ThreadPoolFactory poolFactory = new FixedSizedThreadPoolFactory();
 
 
+    private long noOfRemainingTasks = 0;
+
+    public MainThread(ApplicationCallback applicationCallback){
+        this.applicationCallback = applicationCallback;
+    }
+
     @Override
     public void run() {
-        System.out.println(listOfTasks.size());
             ExecutorService executorService = poolFactory.getThreadPool(listOfTasks.size());
 
         try {
+            noOfRemainingTasks = listOfTasks.size();
             futures =  executorService.invokeAll(listOfTasks);
-        } catch (InterruptedException e) {
+
+            applicationCallback.onTasksComplete();
+
+            executorService.shutdown();
+        } catch (InterruptedException  /*| ExecutionException*/ e) {
             e.printStackTrace();
         }
 
@@ -74,20 +85,10 @@ public class MainThread extends Thread implements TaskCallback {
 
     public void addTask(Callable task , int noOfChildren){
         listOfTasks.add(new TaskWrapper(this,task));
-        System.out.println(listOfTasks.size());
     }
 
 
-    /**
-     * start work on the submitted threads / tasks
-     * @return
-     */
-    public boolean startWork(){
 
-        //TODO submit to thread Pool
-        new MainThread().start();
-        return true;
-    }
 
     /**
      * start work on the submitted tasks
@@ -106,6 +107,7 @@ public class MainThread extends Thread implements TaskCallback {
     @Override
     public void onTaskCompleted(String threadName) {
 
+
     }
 
     @Override
@@ -115,7 +117,7 @@ public class MainThread extends Thread implements TaskCallback {
 
 
     public ArrayList<Object> getResults() throws ExecutionException, InterruptedException {
-        for(Future future : futures){
+        for(Future<Object> future : futures){
             results.add(future.get());
         }
 
